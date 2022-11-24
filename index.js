@@ -15,9 +15,18 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
-    const database = client.db("Readbook").collection("Catagoris");
-    // query for movies that have a runtime less than 15 minutes
-    const query = {};
+    const Bookcatgoris = client.db("Readbook").collection("Catagoris");
+    app.get("/catagoris", async (req, res) => {
+      const query = {};
+      const catagoris = await Bookcatgoris.find(query).toArray();
+      catagoris.map((catagory) => {
+        const products = catagory.products;
+        const limitedproducts = products.slice(0, 4);
+        console.log(limitedproducts);
+        catagory.products = limitedproducts;
+      });
+      res.send(catagoris);
+    });
   } finally {
   }
 }
