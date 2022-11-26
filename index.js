@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
-const port = process.env.PORT || 4000;
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const port = 4000;
 //midale ware
 app.use(cors());
 app.use(express.json());
@@ -16,6 +16,8 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const Bookcatgoris = client.db("Readbook").collection("Catagoris");
+    const bookUser = client.db("Readbook").collection("readbookuser");
+    //Catagories for home modal
     app.get("/catagoris", async (req, res) => {
       const query = {};
       const catagoris = await Bookcatgoris.find(query).toArray();
@@ -26,6 +28,20 @@ async function run() {
         catagory.products = limitedproducts;
       });
       res.send(catagoris);
+    });
+    //Products Catagoirs wise
+    app.get("/catagoris/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const singalCatagories = await Bookcatgoris.findOne(query);
+      res.send(singalCatagories);
+    });
+
+    //save user with role
+    app.post("/user", async (req, res) => {
+      const user = req.body;
+      const result = await bookUser.insertOne(user);
+      res.status(200).send(result);
     });
   } finally {
   }
