@@ -15,6 +15,20 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+function varifiyJwt(req, res, next) {
+  const authheader = req.headers.authorization;
+  if (!authheader) {
+    return res.status(401).send("unathurize access");
+  }
+  const token = authheader.split(" ")[1];
+  jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
+    if (err) {
+      res.status(403).send({ message: "forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 async function run() {
   try {
     const Bookcatgoris = client.db("Readbook").collection("Catagoris");
@@ -76,14 +90,18 @@ async function run() {
       }
     });
     try {
-      app.get("/bookininfo", async (req, res) => {
+      app.get("/bookininfo", varifiyJwt, async (req, res) => {
         const email = req.query.email;
         console.log(email);
+        const decodedemail = req.decoded.email;
+        console.log(decodedemail);
+        if (decodedemail !== email) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
 
         const allbookings = await BookingInfo.find({
           customeremail: email,
         }).toArray();
-        console.log(allbookings);
         res.status(200).send(allbookings);
       });
     } catch (error) {
