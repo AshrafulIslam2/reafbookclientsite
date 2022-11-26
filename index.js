@@ -58,6 +58,7 @@ async function run() {
       const result = await bookUser.insertOne(user);
       res.status(200).send(result);
     });
+    //save booking infor
     app.post("/bookininfo", async (req, res) => {
       const bookinginfo = req.body;
       const query = {
@@ -74,6 +75,22 @@ async function run() {
         res.send(saveBooking);
       }
     });
+    try {
+      app.get("/bookininfo", async (req, res) => {
+        const email = req.query.email;
+        console.log(email);
+
+        const allbookings = await BookingInfo.find({
+          customeremail: email,
+        }).toArray();
+        console.log(allbookings);
+        res.status(200).send(allbookings);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
+    //Show all Booking Products
   } finally {
   }
 }
