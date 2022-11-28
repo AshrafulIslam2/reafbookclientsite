@@ -65,7 +65,7 @@ async function run() {
         const sellp = catagories.map((catagory) => {
           const products = catagory.products;
           const remainig = products.filter(
-            (product) => product.salleremail === email
+            (product) => product?.salleremail === email
           );
           const sellproducts = remainig;
 
@@ -147,7 +147,63 @@ async function run() {
       }
     });
 
+    //deleteproductbuy user  and seller
+    app.delete("/admin/delete/:id/:email", async (req, res) => {
+      const id = req.params.id;
+      const email = req.params.email;
+      const query2 = { _id: ObjectId(id) };
+      const query = {
+        products: {
+          $elemMatch: {
+            selleremail: email,
+          },
+        },
+      };
+      console.log(id);
+      const deleteuser = await bookUser.deleteOne(query2);
+      const collectionUpdate = await Bookcatgoris.deleteOne(query);
+      if (deleteuser) {
+        return res.status(200).send(deleteuser);
+      }
+    });
+    //delet particual id
+    // app.delete(
+    //   "/sellerproducts/seller/:id/:email/:name/:catagoryname",
+    //   async (req, res) => {
+    //     const id = req.params.id;
+    //     const email = req.params.email;
+    //     const catagoryname = req.params.catagoryname;
+    //     const name = req.params.name;
+    //     console.log(id, email, name, catagoryname);
+    //     const deleteoneitems = await Bookcatgoris.updateOne(
+    //       {
+    //         catagoiyname: catagoryname,
+    //       },
+    //       { $pull: { "products.$[].productname": name } }
+    //     );
+    //   }
+    // );
+
     //get user are admin or not
+
+    ///upload porducts
+    app.post("/saller/upload", async (req, res) => {
+      const product = req.body;
+      const { catagoiyname } = req.body;
+      console.log(product, catagoiyname);
+      const collectionUpdate = await Bookcatgoris.updateOne(
+        {
+          catagoiyname: catagoiyname,
+        },
+        {
+          $set: {
+            "products.$[]": product,
+          },
+        }
+      );
+      res.send(collectionUpdate);
+    });
+
     app.get("/user/admin/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
